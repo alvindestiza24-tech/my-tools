@@ -396,19 +396,42 @@ function renderQr(body) {
         <button class="v-btn" id="qrBtn"><i class="fas fa-qrcode"></i> Buat QR</button>
         <div id="qrResult"></div>
     `;
+
     document.getElementById('qrBtn').onclick = () => {
-        const t = document.getElementById('qrText').value;
+        const t = document.getElementById('qrText').value.trim();
         if (!t) return alert('Input kosong!');
+        
         const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(t)}&size=400`;
+        
         document.getElementById('qrResult').innerHTML = `
             <div class="result-box">
-                <img src="${qrUrl}" style="width:200px;border-radius:8px;background:white;padding:8px;">
+                <img id="qrImage" src="${qrUrl}" style="width:200px;border-radius:8px;background:white;padding:8px;">
                 <br><br>
-                <a href="${qrUrl}" download="qr-code.png" target="_blank" style="text-decoration:none;">
-                    <button class="v-btn" style="background:rgba(168,85,247,0.12);">Download QR</button>
-                </a>
+                <button class="v-btn" id="downloadQrBtn" style="background:rgba(168,85,247,0.12);">
+                    <i class="fas fa-download"></i> Download QR
+                </button>
             </div>
         `;
+
+        
+        document.getElementById('downloadQrBtn').onclick = async () => {
+            try {
+                const response = await fetch(qrUrl);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = 'qr-code.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                alert('Gagal mendownload gambar. Coba tekan dan tahan gambar QR lalu pilih "Download Gambar".');
+            }
+        };
     };
 }
 
